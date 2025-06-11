@@ -5,6 +5,7 @@ This module contains all functions decorated with @ask_model that interact with 
 
 from magentic import StreamedStr
 from packagerix.ui.conversation import ask_model, ask_model_enum
+from packagerix.function_calls import *
 from packagerix.errors import NixError, NixErrorKind, NixBuildErrorDiff
 
 
@@ -29,14 +30,12 @@ Here is the information form the project's GitHub page:
 
 And some relevant metadata of the latest release:
 {release_data}
-           
-You should conclude your response with a call to the try_build_package function, passing the template as you filled it out.
 
-Note: your reply should contain exaclty one code block with the updated Nix code.
-Note: Even though the provided themplate uses the mkDerivation function, this is not the appropriate way to package software for most software ecosystems (outside of C/C++).
-      Make sure you base your code on an appropriate function provdied by nixpkgs instead.
-
-"""
+Note: Your reply should include exactly one code block with the updated Nix code and nothing else.
+Note: Even though the provided template uses the mkDerivation function, this is not the appropriate way to package software for most software ecosystems (outside of C/C++).
+Note: Use the appropriate functions to get additional information.
+""",
+functions=[search_nixpkgs_for_package, web_search]
 )
 def set_up_project(code_template: str, project_page: str, release_data: dict = None) -> StreamedStr:
     """Initial setup of a Nix package from a GitHub project."""
@@ -67,7 +66,7 @@ def summarize_github(project_page: str, release_data: dict = None) -> StreamedSt
 
 @ask_model("""@model You are software packaging expert who can build any project using the Nix programming language.
 
-Please fix the folloing error in the following Nix code.      
+Please fix the following error in the following Nix code.      
 
 ```nix
 {code}
@@ -77,10 +76,13 @@ Error:
 ```
 {error}
 ```
-           
-Note: your reply should contain exaclty one code block with the updated Nix code.
+
+Note: Use the appropriate functions to get additional information.
+Note: your reply should contain exaclty one code block with the updated Nix code and nothing else.
 Note: If you need to introduce a new hash, use lib.fakeHash as a placeholder, and automated process will replace this with the actual hash.
-""")
+""",
+functions=[search_nixpkgs_for_package, web_search]
+)
 def fix_build_error(code: str, error: str) -> StreamedStr:
     """Fix a build error in Nix code."""
     ...
@@ -107,7 +109,7 @@ def evaluate_progress(initial_error: str, attempted_improvement: str) -> NixBuil
 
 @ask_model("""@model You are software packaging expert who can build any project using the Nix programming language.
 
-Please fix the folloing hash mismatch error in the following Nix code by replacing the relevant intance of lib.fakeHash wiith the actual value from the error message.      
+Please fix the following hash mismatch error in the following Nix code by replacing the relevant intance of lib.fakeHash wiith the actual value from the error message.      
 
 ```nix
 {code}
@@ -119,6 +121,7 @@ Error:
 ```
            
 Note: your reply should contain exaclty one code block with the updated Nix code.
-""")
+""",
+)
 def fix_hash_mismatch(code: str, error: str) -> StreamedStr:
     ...

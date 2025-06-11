@@ -156,19 +156,19 @@ def ask_user(prompt_text: str):
     return decorator
 
 
-def ask_model(prompt_text: str):
+def ask_model(prompt_text: str, **kwargs):
     """Decorator for functions that need model input. Should only be used on stub functions.
     
     This decorator:
-    1. Applies the @prompt decorator with the given prompt
+    1. Applies the @prompt_chain decorator with the given prompt
     2. Shows the coordinator message in the UI
     3. Handles streaming responses
     4. Returns the complete string
     """
     def decorator(func: Callable[..., StreamedStr]) -> Callable[..., str]:
         # Apply the prompt decorator using the same prompt text
-        from magentic import prompt, StreamedStr
-        prompt_decorated_func = prompt(prompt_text.replace("@model ", ""))(func)
+        from magentic import prompt_chain
+        prompt_decorated_func = prompt_chain(prompt_text.replace("@model ", ""), **kwargs)(func)
         
         @wraps(func)
         def wrapper(*args, **kwargs) -> str:
